@@ -16,11 +16,11 @@ namespace CodeProjectSerialComms
             //Application.Run(new Form1());
             Trilateration trilateration = new Trilateration();
 
-            string p1s = "120,68,0";
-            string p2s = "203,30,0";
-            string p3s = "310,120,0";
+            string p1s = "1,1,1";
+            string p2s = "3,1,1";
+            string p3s = "2,2,1";
          
-            var position = trilateration.GetIntersectionPoint(p1s, p2s, p3s,"587.22,601.9,545.24");
+            var position = trilateration.GetIntersectionPoint(p1s, p2s, p3s,"1,1,1");
 
             if (position.valid)
             {

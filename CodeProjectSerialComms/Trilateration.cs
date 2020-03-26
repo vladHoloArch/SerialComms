@@ -5,6 +5,8 @@ namespace CodeProjectSerialComms
 {
     public class Trilateration
     {
+        private bool isWrongWay = false;
+
         public Vector GetIntersectionPoint(string P1s, string P2s, string P3s, string radiuses)
         {
             Vector p1 = new Vector(P1s);
@@ -14,56 +16,74 @@ namespace CodeProjectSerialComms
             Vector res = new Vector();
             var positions = Trilaterate(p1, p2, p3, radii);
 
-            if (!positions[0].valid)
-                return positions[0];
-            else
+            if (positions != null)
             {
-                Vector ip = new Vector();
+                Vector point;
 
-                if (positions[0].final)
+                if (positions[0].y < positions[1].y)
                 {
-                    if (positions.Length > 1)
-                    {
-                        if (positions[0].y < positions[1].y)
-                        {
-                            res = positions[1];
-                        }
-                        else
-                        {
-                            res = positions[0];
-                        }
-                    }
-                    else
-                    {
-                        res = positions[0];
-                    }
+                    point = positions[1];
                 }
                 else
-                {
-                    ip = positions[0];
-                    float r1 = (float)Math.Sqrt((Math.Pow(ip.x - p1.x, 2) + Math.Pow(ip.y - p1.y, 2) + Math.Pow(ip.z - p1.z, 2)));
-                    float r2 = (float)Math.Sqrt((Math.Pow(ip.x - p2.x, 2) + Math.Pow(ip.y - p2.y, 2) + Math.Pow(ip.z - p2.z, 2)));
-                    float r3 = (float)Math.Sqrt((Math.Pow(ip.x - p3.x, 2) + Math.Pow(ip.y - p3.y, 2) + Math.Pow(ip.z - p3.z, 2)));
+                    point = positions[0];
 
-                    var finalRes = Trilaterate(p1, p2, p3, new Vector(r1, r2, r3));
-
-                    if (finalRes.Length > 1)
-                    {
-                        if (finalRes[0].y < finalRes[1].y)
-                        {
-                            res = finalRes[1];
-                        }
-                        else
-                        {
-                            res = finalRes[0];
-                        }
-                    }
-                    else
-                    {
-                        res = finalRes[0];
-                    }
-                }
+                double z = Math.Sqrt(-(point.x * point.x) + 2 * point.x * p3.x - p3.x * p3.x - point.y * point.y + 2 * point.y * p3.y + radii.z * radii.z);
+                point.z = (float)z;
+                point.final = true;
+                point.valid = true;
+                res = point;
             }
+
+            //if (!positions[0].valid)
+            //    return positions[0];
+            //else
+            //{
+            //    Vector ip = new Vector();
+
+            //    if (positions[0].final)
+            //    {
+            //        if (positions.Length > 1)
+            //        {
+            //            if (positions[0].y < positions[1].y)
+            //            {
+            //                res = positions[1];
+            //            }
+            //            else
+            //            {
+            //                res = positions[0];
+            //            }
+            //        }
+            //        else
+            //        {
+            //            res = positions[0];
+            //        }
+            //    }
+            //    else
+            //    {
+            //        ip = positions[0];
+            //        float r1 = (float)Math.Sqrt((Math.Pow(ip.x - p1.x, 2) + Math.Pow(ip.y - p1.y, 2) + Math.Pow(ip.z - p1.z, 2)));
+            //        float r2 = (float)Math.Sqrt((Math.Pow(ip.x - p2.x, 2) + Math.Pow(ip.y - p2.y, 2) + Math.Pow(ip.z - p2.z, 2)));
+            //        float r3 = (float)Math.Sqrt((Math.Pow(ip.x - p3.x, 2) + Math.Pow(ip.y - p3.y, 2) + Math.Pow(ip.z - p3.z, 2)));
+
+            //        var finalRes = Trilaterate(p1, p2, p3, new Vector(r1, r2, r3));
+
+            //        if (finalRes.Length > 1)
+            //        {
+            //            if (finalRes[0].y < finalRes[1].y)
+            //            {
+            //                res = finalRes[1];
+            //            }
+            //            else
+            //            {
+            //                res = finalRes[0];
+            //            }
+            //        }
+            //        else
+            //        {
+            //            res = finalRes[0];
+            //        }
+            //    }
+            //}
 
             return res;
         }
@@ -75,30 +95,37 @@ namespace CodeProjectSerialComms
             float r2 = radii.y;
             float r3 = radii.z;
 
-            Vector p2MinP1 = P2 - P1;
-            Vector e_x = p2MinP1 / p2MinP1.norm();
-
-            Vector p3MinP1 = P3 - P1;
-            float i = Vector.dot(e_x, p3MinP1);
-            Vector a = e_x * i;
-            Vector tmp = p3MinP1 - a;
-
-            Vector e_y = tmp / tmp.norm();
-            Vector e_z = e_x * e_y;
-
-            float d = p2MinP1.norm();
-            float j = Vector.dot(e_y, p3MinP1);
-            float x = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
-            float y = (r1 * r1 - r3 * r3 - 2 * i * x + i * i + j * j) / (2 * j);
-            float assert = r1 * r1 - x * x - y * y;
-
-            if (assert > 0 || float.IsNaN(assert))
+            if (!isWrongWay)
             {
-                res = trilaterateThreeCircles(P1, P2, P3, r1, r2, r3);
+                Vector p2MinP1 = P2 - P1;
+                Vector e_x = p2MinP1 / p2MinP1.norm();
+
+                Vector p3MinP1 = P3 - P1;
+                float i = Vector.dot(e_x, p3MinP1);
+                Vector a = e_x * i;
+                Vector tmp = p3MinP1 - a;
+
+                Vector e_y = tmp / tmp.norm();
+                Vector e_z = e_x * e_y;
+
+                float d = p2MinP1.norm();
+                float j = Vector.dot(e_y, p3MinP1);
+                float x = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
+                float y = (r1 * r1 - r3 * r3 - 2 * i * x + i * i + j * j) / (2 * j);
+                float assert = r1 * r1 - x * x - y * y;
+
+                if (assert < 0 || float.IsNaN(assert))
+                {
+                    res = trilaterateThreeCircles(P1, P2, P3, r1, r2, r3);
+                }
+                else
+                {
+                    res = calculateThreeSphereIntersection(e_x, e_y, e_z, P1, x, y, (float)Math.Sqrt(assert));
+                }
             }
             else
             {
-                res = calculateThreeSphereIntersection(e_x, e_y, e_z, P1, x, y, (float)Math.Sqrt(assert));
+                res = trilaterateThreeCircles(P1, P2, P3, r1, r2, r3);
             }
 
             return res;
@@ -170,8 +197,8 @@ namespace CodeProjectSerialComms
                 res = calculateCircleCircleIntersection(P1, P2, P3, r1, r2, r3);
 
                 Vector avg = Vector.zero;
-                int count = 0;
-                List<Vector> archa = new List<Vector>();
+                //int count = 0;
+                //List<Vector> archa = new List<Vector>();
 
                 for (int ind = 0; ind < res.Length; ind++)
                 {
@@ -180,29 +207,18 @@ namespace CodeProjectSerialComms
 
                     res[ind] = res[ind] - offset;
 
-                    if (res[ind].y >= 0)
-                    {
-                        avg += res[ind];
-                        count++;
-                        archa.Add(res[ind]);
-                    }
+                    //if (res[ind].y >= 0)
+                    //{
+                    //    avg += res[ind];
+                    //    count++;
+                    //    archa.Add(res[ind]);
+                    //}
                 }
 
-                //for (int i = 0; i < archa.Count; i++)
-                //{
-                //    if (i == 0)
-                //    {
-                //        avg = archa[i];
-                //        continue;
-                //    }
-
-                //    avg = (archa[i] + avg) / 2;
-                //}
-
-                avg /= count;
-                res = null;
-                avg.valid = true;
-                res = new Vector[] { avg };
+                //avg /= count;
+                //res = null;
+                //avg.valid = true;
+                //res = new Vector[] { avg };
             }
 
             return res;
@@ -350,10 +366,6 @@ namespace CodeProjectSerialComms
                 y1 = vec[0].y;
                 x11 = vec[1].x;
                 y11 = vec[1].y;
-                //x1 = (r1 * r1 - r2 * r2 + d1 * d1) / 2 * d1;
-                //y1 = (float)Math.Sqrt(r1 * r1 - x1 * x1);
-                //x11 = x1;
-                //y11 = -y1;
             }
 
             float x2, y2;
