@@ -107,17 +107,16 @@ namespace CodeProjectSerialComms
 
         private void trialetrate(string text)
         {
-            //var positions = trilateration.Trilaterate("5,7,16", "-5,3,28", "2,11,14", text);
-            //positions = trilateration.Trilaterate("5,7,16", "-5,3,28", "2,11,14", text);
+            var positions = trilateration.GetIntersectionPoint("0,0,0", "200,0,0", "0,0,200", text);
 
-            //if (!positions[0].valid)
-            //{
-            //    this.rtbOutgoing.Text = "NaN";
-            //}
-            //else
-            //{
-            //    this.rtbOutgoing.Text = positions[0].ToString() + Environment.NewLine + positions[1].ToString();              
-            //}
+            if (!positions.valid)
+            {
+                this.rtbOutgoing.Text = "NaN";
+            }
+            else
+            {
+                this.rtbOutgoing.Text = positions.ToString();
+            }
         }
 
         internal void PinChanged(object sender, SerialPinChangedEventArgs e)

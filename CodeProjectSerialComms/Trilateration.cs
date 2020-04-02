@@ -16,7 +16,7 @@ namespace CodeProjectSerialComms
             Vector res = new Vector();
             var positions = Trilaterate(p1, p2, p3, radii);
 
-            if (positions != null)
+            if (positions != null && positions[0].valid)
             {
                 Vector point;
 
@@ -27,8 +27,6 @@ namespace CodeProjectSerialComms
                 else
                     point = positions[0];
 
-                double z = Math.Sqrt(-(point.x * point.x) + 2 * point.x * p3.x - p3.x * p3.x - point.y * point.y + 2 * point.y * p3.y + radii.z * radii.z);
-                point.z = (float)z;
                 point.final = true;
                 point.valid = true;
                 res = point;
@@ -116,7 +114,15 @@ namespace CodeProjectSerialComms
 
                 if (assert < 0 || float.IsNaN(assert))
                 {
-                    res = trilaterateThreeCircles(P1, P2, P3, r1, r2, r3);
+                    //res = trilaterateThreeCircles(P1, P2, P3, r1, r2, r3);
+                    res = new Vector[]
+                    {
+                        new Vector()
+                        {
+                            valid = false,
+                            final = true
+                        }
+                    };
                 }
                 else
                 {

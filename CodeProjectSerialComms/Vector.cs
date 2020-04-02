@@ -60,9 +60,24 @@ namespace CodeProjectSerialComms
             return mag;
         }
 
+        public float[] ToFloatArray()
+        {
+            return new float[]
+            {
+                x,
+                y,
+                z
+            };
+        }
+
         override public string ToString()
         {
             return string.Format("{0},{1},{2}", x, y, z);
+        }
+
+        public string ToString(string precision)
+        {
+            return string.Format("{0},{1},{2}", x.ToString(precision), y.ToString(precision), z.ToString(precision));
         }
 
         public static float dot(Vector vectA, Vector vectB)
