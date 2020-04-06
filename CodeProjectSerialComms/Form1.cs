@@ -12,7 +12,7 @@ namespace CodeProjectSerialComms
 {
     public partial class Form1 : Form
     {
-        SerialPort ComPort = new SerialPort();
+        private SerialPort ComPort = new SerialPort();
         private ConstantVelocityProcess process;
         private Kalman kalman;
         private Trilateration trilateration;
@@ -28,7 +28,7 @@ namespace CodeProjectSerialComms
             initializeChart();
 
             trilateration = new Trilateration();
-            process = new ConstantVelocityProcess();
+            //process = new ConstantVelocityProcess(new Vector(this.PositionSeed.Text));
             initializeKalman();
 
             SerialPinChangedEventHandler1 = new SerialPinChangedEventHandler(PinChanged);
@@ -45,6 +45,12 @@ namespace CodeProjectSerialComms
             kalman.VarProcess = processNoise;
         }
 
+        private void initializeProcess()
+        {
+            int max = new Vector(this.PositionSeed.Text).GetMaxIntComponenet();
+            process = new ConstantVelocityProcess(new Vector(max, max));
+        }
+
         private void timer_Tick(object sender, EventArgs e)
         {
             float accelNoise = (float)numProcessNoise.Value;
@@ -54,8 +60,8 @@ namespace CodeProjectSerialComms
             var processPosition = process.GetNoisyState(accelNoise).Position;
 
             bool measurementExist;
-            var measurementPosition = process.TryGetNoisyMeasurement(measurementNoise, out measurementExist);
-            var measurement = trilateration.GetDistancesGivenPosition(new Vector(measurementPosition.X, measurementPosition.Y),
+            Vector measurementPosition = process.TryGetNoisyMeasurement(measurementNoise, out measurementExist);
+            var measurement = trilateration.GetDistancesGivenPosition(measurementPosition,
                                                                       new Vector(Beacon1PositionTextBox.Text),
                                                                       new Vector(Beacon2PositionTextBox.Text),
                                                                       new Vector(Beacon3PositionTextBox.Text));
@@ -75,7 +81,7 @@ namespace CodeProjectSerialComms
             //try plot measuremnt (what we see)
             if (measurementExist)
             {
-                plotData(new Vector(measurementPosition.X, measurementPosition.Y), 1);
+                plotData(measurementPosition, 1);
                 //plot corrected state (Kalman)
                 plotData(correctedPosition, 2, new DataPoint { BorderWidth = 5 });
             }
@@ -90,7 +96,7 @@ namespace CodeProjectSerialComms
 
         private void AlternateState_CheckedChanged(object sender, EventArgs e)
         {
-            if (this.AlternateStateCheckBox.Checked == true)
+            if (this.ToggleStateCheckBox.Checked == true)
             {
                 enableOrDisableGeneratedReadingsButtons(false);
                 removeGeneratedReadingsButtons();
@@ -416,28 +422,28 @@ namespace CodeProjectSerialComms
 
         private void enableOrDisableGeneratedReadingsButtons(bool state)
         {
-            this.DisatancesSeedGroupBox.Visible     = state;
-            this.DisatancesSeedGroupBox.Enabled     = state;
-            this.MeasurementNoiseGroupBox.Visible   = state;
-            this.MeasurementNoiseGroupBox.Enabled   = state;
-            this.ProcessNosieGroupBox.Visible       = state;
-            this.ProcessNosieGroupBox.Enabled       = state;
-            this.StopOrResumeButton.Visible         = state;
-            this.StopOrResumeButton.Enabled         = state;
-            this.Beacon1Label.Visible               = state;
-            this.Beacon1Label.Enabled               = state;
-            this.Beacon2Label.Visible               = state;
-            this.Beacon2Label.Enabled               = state;
-            this.Beacon3Label.Visible               = state;
-            this.Beacon3Label.Enabled               = state;
-            this.BeaconPositionsGroupBox.Visible    = state;
-            this.BeaconPositionsGroupBox.Enabled    = state;
-            this.ClearChartButton.Visible           = state;
-            this.ClearChartButton.Enabled           = state;
+            this.DisatancesSeedGroupBox.Visible = state;
+            this.DisatancesSeedGroupBox.Enabled = state;
+            this.MeasurementNoiseGroupBox.Visible = state;
+            this.MeasurementNoiseGroupBox.Enabled = state;
+            this.ProcessNosieGroupBox.Visible = state;
+            this.ProcessNosieGroupBox.Enabled = state;
+            this.StopOrResumeButton.Visible = state;
+            this.StopOrResumeButton.Enabled = state;
+            this.Beacon1Label.Visible = state;
+            this.Beacon1Label.Enabled = state;
+            this.Beacon2Label.Visible = state;
+            this.Beacon2Label.Enabled = state;
+            this.Beacon3Label.Visible = state;
+            this.Beacon3Label.Enabled = state;
+            this.BeaconPositionsGroupBox.Visible = state;
+            this.BeaconPositionsGroupBox.Enabled = state;
+            this.ClearChartButton.Visible = state;
+            this.ClearChartButton.Enabled = state;
 
             if (state)
             {
-                foreach(Control con in BeaconPositionsGroupBox.Controls)
+                foreach (Control con in BeaconPositionsGroupBox.Controls)
                 {
                     if (con is TextBox)
                     {
@@ -460,6 +466,11 @@ namespace CodeProjectSerialComms
         private void StopOrResumeButton_Click(object sender, EventArgs e)
         {
             timer.Enabled = !timer.Enabled;
+            
+            if (process == null)
+            {
+                initializeProcess();
+            }
         }
 
         private void num_ValueChanged(object sender, EventArgs e)
@@ -471,8 +482,15 @@ namespace CodeProjectSerialComms
         {
             timer.Enabled = false;
             clearChart();
-            process = new ConstantVelocityProcess();
+            initializeProcess();
             initializeKalman();
+        }
+        private void PositionSeed_FocusLeave(object sender, EventArgs e)
+        {
+            var max = new Vector(this.PositionSeed.Text).GetMaxIntComponenet();
+            ConstantVelocityProcess.WorkingArea = new Size(max, max);
+            initializeProcess();
+            initializeChart();
         }
 
         #endregion// end Generated Readings GUI

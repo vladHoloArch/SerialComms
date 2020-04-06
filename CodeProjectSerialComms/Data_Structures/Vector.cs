@@ -165,4 +165,17 @@ namespace CodeProjectSerialComms
             return res;
         }
     }
+
+    public static class VectorExtensions
+    {
+        public static Vector RoundToNearestInt(this Vector v)
+        {
+            return new Vector(Convert.ToInt32(v.x), Convert.ToInt32(v.y), Convert.ToInt32(v.z));
+        }
+
+        public static int GetMaxIntComponenet(this Vector v)
+        {
+            return Convert.ToInt32(Math.Max(v.x, Math.Max(v.y, v.z)));
+        }
+    }
 }

@@ -1,18 +1,14 @@
 ﻿using Accord.Math;
 using Accord.Statistics.Distributions.Univariate;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CodeProjectSerialComms
 {
     public class ConstantVelocityProcess
     {
-        public static Size WorkingArea = new Size(100, 100);
-        public static float TimeInterval = 1;
+        public static Size WorkingArea;// = new Size(500, 500);
+        private float TimeInterval = 1;
 
         NormalDistribution normalDistribution = new NormalDistribution(0, 0.2);
         Random rand = new Random();
@@ -20,12 +16,12 @@ namespace CodeProjectSerialComms
         ConstantVelocity2DModel initialState;
         ConstantVelocity2DModel currentState;
 
-        public ConstantVelocityProcess()
+        public ConstantVelocityProcess(Vector position)
         {
             currentState = new ConstantVelocity2DModel
             {
-                Position = new Vector(50, 1),
-                Velocity = new Vector(0.3f, 0.3f)
+                Position = new Vector(position.x / 2, 1),
+                Velocity = new Vector(0.3f * position.x / 100, 0.3f * position.x / 100)
             };
 
             initialState = currentState;
@@ -87,16 +83,16 @@ namespace CodeProjectSerialComms
             };
         }
 
-        public PointF TryGetNoisyMeasurement(double measurementNoise, out bool isSuccess, double missingMeasurementProbability = 0.2)
+        public Vector TryGetNoisyMeasurement(double measurementNoise, out bool isSuccess, double missingMeasurementProbability = 0.2)
         {
             isSuccess = rand.NextDouble() > missingMeasurementProbability;
             if (!isSuccess)
-                return new PointF();
+                return new Vector();
 
-            return new PointF
+            return new Vector
             {
-                X = currentState.Position.x + (float)normalDistribution.Generate() * (float)measurementNoise,
-                Y = currentState.Position.y + (float)normalDistribution.Generate() * (float)measurementNoise
+                x = currentState.Position.x + (float)normalDistribution.Generate() * (float)measurementNoise,
+                y = currentState.Position.y + (float)normalDistribution.Generate() * (float)measurementNoise
             };
         }
     }

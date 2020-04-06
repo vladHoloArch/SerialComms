@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.btnGetSerialPorts = new System.Windows.Forms.Button();
             this.cboPorts = new System.Windows.Forms.ComboBox();
             this.cboBaudRate = new System.Windows.Forms.ComboBox();
@@ -49,7 +49,7 @@
             this.rtbOutgoing = new System.Windows.Forms.RichTextBox();
             this.btnHyperTerm = new System.Windows.Forms.Button();
             this.txtCommand = new System.Windows.Forms.TextBox();
-            this.AlternateStateCheckBox = new System.Windows.Forms.CheckBox();
+            this.ToggleStateCheckBox = new System.Windows.Forms.CheckBox();
             this.StopOrResumeButton = new System.Windows.Forms.Button();
             this.numProcessNoise = new System.Windows.Forms.NumericUpDown();
             this.ProcessNosieGroupBox = new System.Windows.Forms.GroupBox();
@@ -257,24 +257,24 @@
             this.txtCommand.TabIndex = 17;
             this.txtCommand.Visible = false;
             // 
-            // AlternateStateCheckBox
+            // ToggleStateCheckBox
             // 
-            this.AlternateStateCheckBox.AutoSize = true;
-            this.AlternateStateCheckBox.Location = new System.Drawing.Point(239, 27);
-            this.AlternateStateCheckBox.Name = "AlternateStateCheckBox";
-            this.AlternateStateCheckBox.Size = new System.Drawing.Size(96, 17);
-            this.AlternateStateCheckBox.TabIndex = 18;
-            this.AlternateStateCheckBox.Text = "Alternate State";
-            this.AlternateStateCheckBox.UseVisualStyleBackColor = true;
-            this.AlternateStateCheckBox.CheckedChanged += new System.EventHandler(this.AlternateState_CheckedChanged);
+            this.ToggleStateCheckBox.AutoSize = true;
+            this.ToggleStateCheckBox.Location = new System.Drawing.Point(239, 27);
+            this.ToggleStateCheckBox.Name = "ToggleStateCheckBox";
+            this.ToggleStateCheckBox.Size = new System.Drawing.Size(87, 17);
+            this.ToggleStateCheckBox.TabIndex = 18;
+            this.ToggleStateCheckBox.Text = "Toggle State";
+            this.ToggleStateCheckBox.UseVisualStyleBackColor = true;
+            this.ToggleStateCheckBox.CheckedChanged += new System.EventHandler(this.AlternateState_CheckedChanged);
             // 
             // StopOrResumeButton
             // 
             this.StopOrResumeButton.Location = new System.Drawing.Point(12, 27);
             this.StopOrResumeButton.Name = "StopOrResumeButton";
-            this.StopOrResumeButton.Size = new System.Drawing.Size(98, 23);
+            this.StopOrResumeButton.Size = new System.Drawing.Size(120, 23);
             this.StopOrResumeButton.TabIndex = 19;
-            this.StopOrResumeButton.Text = "Stop / Resume";
+            this.StopOrResumeButton.Text = "Start / Stop / Resume";
             this.StopOrResumeButton.UseVisualStyleBackColor = true;
             this.StopOrResumeButton.Click += new System.EventHandler(this.StopOrResumeButton_Click);
             // 
@@ -359,6 +359,7 @@
             this.PositionSeed.Size = new System.Drawing.Size(100, 20);
             this.PositionSeed.TabIndex = 0;
             this.PositionSeed.Text = "0,0,0";
+            this.PositionSeed.Leave += new System.EventHandler(this.PositionSeed_FocusLeave);
             // 
             // BeaconPositionsGroupBox
             // 
@@ -371,6 +372,7 @@
             this.BeaconPositionsGroupBox.TabIndex = 24;
             this.BeaconPositionsGroupBox.TabStop = false;
             this.BeaconPositionsGroupBox.Text = "Beacon Positions";
+            this.toolTip1.SetToolTip(this.BeaconPositionsGroupBox, "x,y,z no spaces (yes commas)");
             // 
             // Beacon3PositionTextBox
             // 
@@ -428,16 +430,16 @@
             this.chart.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            chartArea2.Name = "ChartArea1";
-            this.chart.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.chart.Legends.Add(legend2);
+            chartArea1.Name = "ChartArea1";
+            this.chart.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.chart.Legends.Add(legend1);
             this.chart.Location = new System.Drawing.Point(362, 12);
             this.chart.Name = "chart";
-            series2.ChartArea = "ChartArea1";
-            series2.Legend = "Legend1";
-            series2.Name = "Series1";
-            this.chart.Series.Add(series2);
+            series1.ChartArea = "ChartArea1";
+            series1.Legend = "Legend1";
+            series1.Name = "Series1";
+            this.chart.Series.Add(series1);
             this.chart.Size = new System.Drawing.Size(551, 399);
             this.chart.TabIndex = 25;
             this.chart.Text = "chart";
@@ -472,7 +474,7 @@
             this.Controls.Add(this.MeasurementNoiseGroupBox);
             this.Controls.Add(this.ProcessNosieGroupBox);
             this.Controls.Add(this.StopOrResumeButton);
-            this.Controls.Add(this.AlternateStateCheckBox);
+            this.Controls.Add(this.ToggleStateCheckBox);
             this.Name = "Form1";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.numProcessNoise)).EndInit();
@@ -508,7 +510,7 @@
         private System.Windows.Forms.RichTextBox rtbOutgoing;
         private System.Windows.Forms.Button btnHyperTerm;
         private System.Windows.Forms.TextBox txtCommand;
-        private System.Windows.Forms.CheckBox AlternateStateCheckBox;
+        private System.Windows.Forms.CheckBox ToggleStateCheckBox;
         private System.Windows.Forms.Button StopOrResumeButton;
         private System.Windows.Forms.NumericUpDown numProcessNoise;
         private System.Windows.Forms.GroupBox ProcessNosieGroupBox;
