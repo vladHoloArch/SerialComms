@@ -8,7 +8,7 @@ namespace CodeProjectSerialComms
     static class Program
     {
         // set true if you wish to run live reading from the sensors
-        private static bool isLive = false;
+        private static bool isLive = true;
         private static readonly int NUMBER_OF_INPUT_DISTANCES = 100;
         
         [STAThread]

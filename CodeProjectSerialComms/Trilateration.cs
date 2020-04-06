@@ -86,6 +86,17 @@ namespace CodeProjectSerialComms
             return res;
         }
 
+        public Vector GetDistancesGivenPosition(Vector position, Vector beacon1Pos, Vector beacon2Pos, Vector beacon3Pos)
+        {
+            Vector res = new Vector();
+
+            res.x = (float)(Math.Sqrt(Math.Pow(position.x - beacon1Pos.x, 2) + Math.Pow(position.y - beacon1Pos.y, 2) + Math.Pow(position.z - beacon1Pos.z, 2)));
+            res.y = (float)(Math.Sqrt(Math.Pow(position.x - beacon2Pos.x, 2) + Math.Pow(position.y - beacon2Pos.y, 2) + Math.Pow(position.z - beacon2Pos.z, 2)));
+            res.z = (float)(Math.Sqrt(Math.Pow(position.x - beacon3Pos.x, 2) + Math.Pow(position.y - beacon3Pos.y, 2) + Math.Pow(position.z - beacon3Pos.z, 2)));
+
+            return res;
+        }
+
         public Vector[] Trilaterate(Vector P1, Vector P2, Vector P3, Vector radii)
         {
             Vector[] res = null;
