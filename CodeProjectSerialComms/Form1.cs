@@ -61,7 +61,7 @@ namespace CodeProjectSerialComms
 
             bool measurementExist;
             Vector measurementPosition = process.TryGetNoisyMeasurement(measurementNoise, out measurementExist);
-            var measurement = trilateration.GetDistancesGivenPosition(measurementPosition,
+            var measurement = trilateration.GetDistances2DGivenPosition(measurementPosition,
                                                                       new Vector(Beacon1PositionTextBox.Text),
                                                                       new Vector(Beacon2PositionTextBox.Text),
                                                                       new Vector(Beacon3PositionTextBox.Text));

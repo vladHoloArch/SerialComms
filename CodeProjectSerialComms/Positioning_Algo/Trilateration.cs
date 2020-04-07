@@ -5,8 +5,6 @@ namespace CodeProjectSerialComms
 {
     public class Trilateration
     {
-        private bool isWrongWay = false;
-
         public Vector GetIntersectionPoint(string P1s, string P2s, string P3s, string radiuses)
         {
             Vector p1 = new Vector(P1s);
@@ -86,63 +84,122 @@ namespace CodeProjectSerialComms
             return res;
         }
 
-        public Vector GetDistancesGivenPosition(Vector position, Vector beacon1Pos, Vector beacon2Pos, Vector beacon3Pos)
+        public Vector GetDistances2DGivenPosition(Vector position, Vector beacon1Pos, Vector beacon2Pos, Vector beacon3Pos)
         {
             Vector res = new Vector();
 
-            res.x = (float)(Math.Sqrt(Math.Pow(position.x - beacon1Pos.x, 2) + Math.Pow(position.y - beacon1Pos.y, 2) + Math.Pow(position.z - beacon1Pos.z, 2)));
-            res.y = (float)(Math.Sqrt(Math.Pow(position.x - beacon2Pos.x, 2) + Math.Pow(position.y - beacon2Pos.y, 2) + Math.Pow(position.z - beacon2Pos.z, 2)));
-            res.z = (float)(Math.Sqrt(Math.Pow(position.x - beacon3Pos.x, 2) + Math.Pow(position.y - beacon3Pos.y, 2) + Math.Pow(position.z - beacon3Pos.z, 2)));
+            res.x = (float)(Math.Sqrt(Math.Pow(position.x - beacon1Pos.x, 2) + Math.Pow(position.y - beacon1Pos.y, 2)));
+            res.y = (float)(Math.Sqrt(Math.Pow(position.x - beacon2Pos.x, 2) + Math.Pow(position.y - beacon2Pos.y, 2)));
+            res.z = (float)(Math.Sqrt(Math.Pow(position.x - beacon3Pos.x, 2) + Math.Pow(position.y - beacon3Pos.y, 2)));
 
             return res;
         }
 
         public Vector[] Trilaterate(Vector P1, Vector P2, Vector P3, Vector radii)
         {
+            float theta;
+            float[,] rotation = null;
+            float[,] reverseRotation = null;
+            Vector offset = new Vector();
             Vector[] res = null;
             float r1 = radii.x;
             float r2 = radii.y;
             float r3 = radii.z;
 
-            if (!isWrongWay)
+            // sort points by distance for circle-circle intersection if needed 
+            if ((P2 - P1).norm() > (P3 - P1).norm())
             {
-                Vector p2MinP1 = P2 - P1;
-                Vector e_x = p2MinP1 / p2MinP1.norm();
+                Vector temp = P3;
+                P3 = P2;
+                P2 = temp;
+                float tempR = r3;
+                r3 = r2;
+                r2 = tempR;
+            }
 
-                Vector p3MinP1 = P3 - P1;
-                float i = Vector.dot(e_x, p3MinP1);
-                Vector a = e_x * i;
-                Vector tmp = p3MinP1 - a;
+            if (P1 != Vector.zero)
+            {
+                offset = -P1;
+                P1 = P1 + offset;
+                P2 = P2 + offset;
+                P3 = P3 + offset;
+            }
 
-                Vector e_y = tmp / tmp.norm();
-                Vector e_z = e_x * e_y;
+            //P2.z = 0;
+            //P3.z = 0;
 
-                float d = p2MinP1.norm();
-                float j = Vector.dot(e_y, p3MinP1);
-                float x = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
-                float y = (r1 * r1 - r3 * r3 - 2 * i * x + i * i + j * j) / (2 * j);
-                float assert = r1 * r1 - x * x - y * y;
+            if (P2.y != 0)
+            {
+                float rad = (float)Math.Acos(P2.x / P2.norm());
+                theta = (float)(rad / Math.PI) * 180f;
 
-                if (assert < 0 || float.IsNaN(assert))
+                if (P2.y > 0)
                 {
-                    //res = trilaterateThreeCircles(P1, P2, P3, r1, r2, r3);
-                    res = new Vector[]
-                    {
+                    theta = -theta;
+                    rad = -rad;
+                }
+
+                rotation = new float[,]
+                {
+                        { (float)Math.Cos(rad), -(float)Math.Sin(rad), 0},
+                        { (float)Math.Sin(rad),  (float)Math.Cos(rad), 0},
+                        { 0, 0, 0 }
+                };
+
+                reverseRotation = new float[,]
+                {
+                        { (float)Math.Cos(-rad), -(float)Math.Sin(-rad), 0},
+                        { (float)Math.Sin(-rad),  (float)Math.Cos(-rad), 0},
+                        { 0, 0, 0 }
+                };
+
+                P2 = rotation.MultiplyMatrix(P2);
+                P3 = rotation.MultiplyMatrix(P3);
+            }
+
+            Vector p2MinP1 = P2 - P1;
+            Vector e_x = p2MinP1 / p2MinP1.norm();
+
+            Vector p3MinP1 = P3 - P1;
+            float i = Vector.dot(e_x, p3MinP1);
+            Vector a = e_x * i;
+            Vector tmp = p3MinP1 - a;
+
+            Vector e_y = tmp / tmp.norm();
+            Vector e_z = e_x * e_y;
+
+            float d = p2MinP1.norm();
+            float j = Vector.dot(e_y, p3MinP1);
+            float x = (r1 * r1 - r2 * r2 + d * d) / (2 * d);
+            float y = (r1 * r1 - r3 * r3 - 2 * i * x + i * i + j * j) / (2 * j);
+            float assert = r1 * r1 - x * x - y * y;
+
+            if (assert < 0 && testCircleCircleIntersection(P1, P2, P3, r1, r2, r3) != null)
+            {
+                res = new Vector[]
+                {
                         new Vector()
                         {
                             valid = false,
                             final = true
                         }
-                    };
-                }
-                else
-                {
-                    res = calculateThreeSphereIntersection(e_x, e_y, e_z, P1, x, y, (float)Math.Sqrt(assert));
-                }
+                };
             }
             else
             {
-                res = trilaterateThreeCircles(P1, P2, P3, r1, r2, r3);
+                var rotatedRes = calculateThreeSphereIntersection(e_x, e_y, e_z, P1, x, y, (float)Math.Sqrt(assert));
+
+                if (reverseRotation != null)
+                {
+                    rotatedRes[0] = reverseRotation.MultiplyMatrix(rotatedRes[0]);
+                    rotatedRes[1] = reverseRotation.MultiplyMatrix(rotatedRes[1]);
+                }
+
+                rotatedRes[0] = rotatedRes[0] - offset;
+                rotatedRes[1] = rotatedRes[1] - offset;
+                rotatedRes[0].valid = rotatedRes[1].valid = true;
+
+                res = rotatedRes;
             }
 
             return res;
